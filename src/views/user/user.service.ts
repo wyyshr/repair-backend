@@ -18,8 +18,9 @@ export class UserService {
   // 登录
   async login(body: UserType) {
     const user = await this.userRepository.findOne({ userName: body.userName });
-    if (!user) await this.userRepository.save(body);
-    await this.userRepository.update(user, { identity: body.identity })
+    !user ?
+      await this.userRepository.save(body) : 
+      await this.userRepository.update(user, { identity: body.identity })
     return { code: 1, success: true };
   }
 
