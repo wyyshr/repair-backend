@@ -15,13 +15,28 @@ export class UserService {
     private readonly userInfoRepository: Repository<UserInfo>
   ) { }
 
-  // 登录
+  /**
+   * 首次登录
+   * - 如果选择管理员，无法进入
+   * - 如果选择普通住户，正常进入（保存信息）
+   * 
+   * 非首次登录
+   * - 如果没有权限且选择管理员，无法进入
+   * - 如果有权限，正常进入（更新信息）
+   */
   async login(body: UserType) {
-    const user = await this.userRepository.findOne({ userName: body.userName });
-    !user ?
-      await this.userRepository.save(body) : 
-      await this.userRepository.update(user, { identity: body.identity })
-    return { code: 1, success: true };
+    const { identity, userName } = body
+    const noPower = { code: 0, success: false, msg: '您暂无管理员权限' }
+    const success = { code: 1, success: true }
+    const user = await this.userRepository.findOne({ userName });
+    if (!user) {
+      if (identity === 1) return noPower
+      await this.userRepository.save({ ...body, hasPower: false })
+    } else {
+      if (!user.hasPower && identity === 1) return noPower
+      await this.userRepository.update(user, { ...body })
+    }
+    return success
   }
 
   // 用户信息填写

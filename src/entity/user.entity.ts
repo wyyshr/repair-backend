@@ -15,4 +15,7 @@ export class User {
 
   @Column()
   avatarUrl: string // 头像地址
+
+  @Column()
+  hasPower: boolean // 是否拥有权限
 }
